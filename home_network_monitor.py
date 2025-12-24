@@ -149,7 +149,7 @@ def main():
                     # logger.info(f"[INFO] Auto-added {mac} to whitelist.")
 
             if unknowns == 0:
-                logger.info("[OK] No unknown devices.")
+                logger.success("[OK] No unknown devices.")
 
             logger.info(f"[WAIT] Sleeping {CONFIG['scan_interval']}s...")
             time.sleep(CONFIG["scan_interval"])

@@ -1,0 +1,16 @@
+2025-12-24 09:37:41.301 | INFO     | __main__:main:130 - [INFO] Auto-detected subnet: 192.168.1.0/24
+2025-12-24 09:37:41.302 | INFO     | __main__:main:133 - [INFO] Loaded 5 known devices from known_devices.json
+2025-12-24 09:37:41.302 | SUCCESS  | __main__:main:137 - [START] Network monitor running. Ctrl+C to stop.
+2025-12-24 09:37:41.302 | INFO     | __main__:scan_network:105 - [SCAN] Scanning 192.168.1.0/24...
+2025-12-24 09:37:43.409 | INFO     | __main__:scan_network:116 - [FOUND] 192.168.1.1 -> 5c:53:c3:be:3e:e1
+2025-12-24 09:37:43.409 | INFO     | __main__:scan_network:116 - [FOUND] 192.168.1.158 -> 7e:a6:52:1f:88:da
+2025-12-24 09:37:43.409 | INFO     | __main__:scan_network:117 - [SCAN] Found 2 devices.
+2025-12-24 09:37:43.409 | INFO     | __main__:main:152 - [OK] No unknown devices.
+2025-12-24 09:37:43.409 | INFO     | __main__:main:154 - [WAIT] Sleeping 60s...
+2025-12-24 09:38:43.415 | INFO     | __main__:scan_network:105 - [SCAN] Scanning 192.168.1.0/24...
+2025-12-24 09:38:45.550 | INFO     | __main__:scan_network:116 - [FOUND] 192.168.1.1 -> 5c:53:c3:be:3e:e1
+2025-12-24 09:38:45.551 | INFO     | __main__:scan_network:117 - [SCAN] Found 1 devices.
+2025-12-24 09:38:45.551 | INFO     | __main__:main:152 - [OK] No unknown devices.
+2025-12-24 09:38:45.551 | INFO     | __main__:main:154 - [WAIT] Sleeping 60s...
+2025-12-24 09:39:03.302 | SUCCESS  | __main__:main:157 - 
+[STOP] Monitor stopped.
