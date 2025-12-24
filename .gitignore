@@ -13,3 +13,4 @@ uv.lock
 
 known_devices.json
 unknown_devices.jsonl
+ghost_monitor.log
