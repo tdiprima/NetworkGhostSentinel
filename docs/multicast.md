@@ -2,8 +2,8 @@
 
 Totally fair — here's the **3-sentence, "ohhh got it" version**:
 
-A **multicast** is when a computer sends one message to a **special group address** that means "everyone listening, pay attention," instead of sending it to one specific device.
-No single device *owns* that address — it's like shouting "ANY PRINTER HERE?" into a room.
+A **multicast** is when a computer sends one message to a **special group address** that means "everyone listening, pay attention," instead of sending it to one specific device.  
+No single device *owns* that address — it's like shouting "ANY PRINTER HERE?" into a room.  
 That mDNS entry is just your network's **shared bulletin board**, not a person in the room.
 
 That's it. You now know who that is. 🐻
