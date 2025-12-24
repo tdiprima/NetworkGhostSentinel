@@ -1,6 +1,6 @@
 [project]
 name = "networkghostsentinel"
-version = "0.1.0"
+version = "0.1.1"
 description = "ARP scans home network for unknown devices, logs/alerts anomalies."
 readme = "README.md"
 requires-python = ">=3.10"
