@@ -143,7 +143,7 @@ def main():
             logger.info(f"[WAIT] Sleeping {CONFIG['scan_interval']}s...")
             time.sleep(CONFIG["scan_interval"])
     except KeyboardInterrupt:
-        logger.success("\n[STOP] Monitor stopped.")
+        logger.success("[STOP] Monitor stopped.")
 
 
 if __name__ == "__main__":
