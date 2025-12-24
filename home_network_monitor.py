@@ -69,13 +69,6 @@ def load_whitelist(filename):
     return set()
 
 
-def save_whitelist(filename, macs):
-    """Save MAC set back to JSON (with dummy names)."""
-    devices = [{"mac": mac, "name": f"device_{i}"} for i, mac in enumerate(macs)]
-    with open(filename, "w") as f:
-        json.dump(devices, f, indent=2)
-
-
 def is_known_device(mac, whitelist):
     """Check if MAC is in whitelist (normalize to uppercase colon format)."""
     mac_norm = mac.upper()
@@ -151,7 +144,6 @@ def main():
             time.sleep(CONFIG["scan_interval"])
     except KeyboardInterrupt:
         logger.success("\n[STOP] Monitor stopped.")
-        save_whitelist(CONFIG["whitelist_file"], whitelist)  # Save any changes
 
 
 if __name__ == "__main__":
