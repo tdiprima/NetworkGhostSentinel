@@ -3,7 +3,7 @@
 Home Network Monitor - Python port of ESP32 network scanner.
 Scans local subnet via ARP requests (more reliable than ICMP ping on modern networks).
 Detects devices by IP/MAC, checks against MAC whitelist in JSON file.
-Logs unknown devices as JSON, logger.infos alerts.
+Logs unknown devices as JSON, prints alerts.
 Runs continuously, scanning every 60 seconds.
 
 Requirements:
@@ -143,10 +143,6 @@ def main():
                 if not is_known_device(mac, whitelist):
                     log_unknown_device(ip, mac, CONFIG["log_file"])
                     unknowns += 1
-                    # Optional: auto-add to whitelist? Uncomment below.
-                    # whitelist.add(mac.upper())
-                    # save_whitelist(CONFIG["whitelist_file"], whitelist)
-                    # logger.info(f"[INFO] Auto-added {mac} to whitelist.")
 
             if unknowns == 0:
                 logger.success("[OK] No unknown devices.")
