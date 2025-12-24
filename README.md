@@ -2,8 +2,10 @@
 
 A tiny Python project that keeps an eye on your home network and snitches when a **new or weird device** shows up 👀
 
-Basically:
+Basically:  
 **If something connects to your WiFi that you didn't expect, this script notices and tells you.**
+
+⚠️ Do not scan networks you don't own. This is for personal awareness.
 
 ## 🧠 What does this actually do?
 
