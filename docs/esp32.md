@@ -1,5 +1,7 @@
 ## 😄 What is an ESP32?
 
+![](https://mm.digikey.com/Volume0/opasdata/d220001/medias/images/425/MFG_ESP32-DEVKITC-32UE.jpg)
+
 An **ESP32** is a **tiny, cheap computer chip** that's really good at:
 
 * 📶 **WiFi**
@@ -33,7 +35,7 @@ It's way smaller and weaker than your laptop or a Raspberry Pi, but it's perfect
 
 * Running big programs
 * Doing heavy networking stuff
-* Advanced Python networking tools (like Scapy)
+* Advanced Python networking tools (like Scapy &mdash; interactive packet manipulation tool)
 * Acting like a full computer
 
 So when a project needs deep access to the network (like watching **every device on your WiFi**), an ESP32 kinda struggles 😬
