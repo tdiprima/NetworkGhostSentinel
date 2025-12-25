@@ -10,9 +10,9 @@ It's way smaller and weaker than your laptop or a Raspberry Pi, but it's perfect
 
 ## 🧠 Think of it like this
 
-* **Laptop / PC** → big brain, lots of power 🧠💪
+* **Laptop / PC** → big brain, lots of power 🧠 💪
 * **Raspberry Pi** → mini computer 🥧
-* **ESP32** → *smart potato with WiFi* 🥔📶 (affectionately)
+* **ESP32** → *smart potato with WiFi* 🥔 📶 (affectionately)
 
 ## 🛠️ What people usually use ESP32 for
 
@@ -46,7 +46,7 @@ An **ESP32** is:
 * amazing for **simple smart devices**
 * not great for **complex network monitoring**
 
-If Raspberry Pi is a mini PC,
-ESP32 is a WiFi-enabled brain cell 🧠📶
+If Raspberry Pi is a mini PC,  
+ESP32 is a WiFi-enabled brain cell 🧠 📶
 
 <br>
