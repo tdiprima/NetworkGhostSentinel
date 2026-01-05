@@ -1,5 +1,5 @@
-YES. This is where it actually gets interesting 😈
-You're basically asking: *"Show me what's normal Wi-Fi topology vs what smells like an attack."*
+YES. This is where it actually gets interesting 😈  
+You're basically asking: *"Show me what's normal Wi-Fi topology vs what smells like an attack."*  
 That's **exactly** what BSSID-aware logic is for.
 
 Below is an **airport-based script** that:
@@ -14,8 +14,6 @@ Below is an **airport-based script** that:
 * explains *why* something is suspicious
 
 We're pretending `airport` works. Conceptually airtight.
-
----
 
 ## 🧠 How the logic works (human version)
 
@@ -38,81 +36,13 @@ For each SSID:
 ### 🚨 Dangerous duplicate
 
 * Same SSID
-* **Different security**
+* **Different security**  
   → classic evil twin
-* OR same SSID + same channel + similar signal
+* OR same SSID + same channel + similar signal  
   → sketchy clone
 
----
-
-## 🛠 Script: `scan_wifi_bssid_awareness.sh`
-
-```bash
-#!/bin/bash
-
-AIRPORT="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
-
-declare -A SEC_MAP
-declare -A CH_MAP
-declare -A BSSID_MAP
-
-echo "📡 Scanning Wi-Fi (BSSID-aware)..."
-echo
-
-# Parse airport output
-"$AIRPORT" -s | tail -n +2 | while read -r line; do
-    ssid=$(echo "$line" | awk '
-        {
-            for (i=1; i<=NF; i++) {
-                if ($i ~ /^[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}$/) {
-                    for (j=1; j<i; j++) printf "%s%s", $j, (j<i-1 ? OFS : "")
-                    exit
-                }
-            }
-        }')
-
-    bssid=$(echo "$line" | grep -oE '([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}')
-    channel=$(echo "$line" | awk '{print $(NF-4)}')
-    security=$(echo "$line" | sed -E 's/.* ([A-Z0-9\/() ]+)$/\1/')
-
-    key="$ssid|$bssid"
-
-    SEC_MAP["$key"]="$security"
-    CH_MAP["$key"]="$channel"
-    BSSID_MAP["$ssid"]+="$bssid "
-done
-
-echo
-echo "SSID                             | CLASSIFICATION"
-echo "---------------------------------+----------------------------"
-
-for ssid in "${!BSSID_MAP[@]}"; do
-    bssids=(${BSSID_MAP[$ssid]})
-    unique_bssids=$(printf "%s\n" "${bssids[@]}" | sort -u)
-
-    sec_types=$(for b in $unique_bssids; do
-        echo "${SEC_MAP["$ssid|$b"]}"
-    done | sort -u)
-
-    channels=$(for b in $unique_bssids; do
-        echo "${CH_MAP["$ssid|$b"]}"
-    done | sort -u)
-
-    if echo "$sec_types" | grep -q "OPEN"; then
-        verdict="🚨 OPEN NETWORK"
-    elif [ "$(echo "$sec_types" | wc -l | tr -d ' ')" -gt 1 ]; then
-        verdict="🚨 DANGEROUS DUPLICATE (SECURITY MISMATCH)"
-    elif [ "$(echo "$unique_bssids" | wc -l | tr -d ' ')" -gt 1 ]; then
-        verdict="✅ SAFE DUPLICATE (MULTI-AP)"
-    else
-        verdict="🔒 SINGLE AP"
-    fi
-
-    printf "%-32s | %s\n" "$ssid" "$verdict"
-done
-```
-
----
+## 🛠 Script:
+`scan_wifi_bssid_awareness.sh`
 
 ## 🧪 Example output (this is the good stuff)
 
@@ -125,8 +55,6 @@ CorpNet                          | 🚨 DANGEROUS DUPLICATE (SECURITY MISMATCH)
 BearNet_5G                       | 🔒 SINGLE AP
 ```
 
----
-
 ## 🚨 What counts as "dangerous" (mental model)
 
 | Symptom                                 | Meaning          |
@@ -136,10 +64,8 @@ BearNet_5G                       | 🔒 SINGLE AP
 | Same SSID + different security          | 🚨 Huge red flag |
 | Same SSID + many BSSIDs + diff channels | Normal infra     |
 
-SSID lies.
+SSID lies.  
 **BSSID never lies.**
-
----
 
 ## Why this is defender brain 🧠
 
@@ -161,5 +87,21 @@ If you want next:
 * visual diff between scans
 
 Say the word. This is fun now 😈📶
+
+---
+
+## 💀 Apple irony moment
+
+Apple:
+
+"Use `wdutil`"
+
+Also Apple:
+
+removes scanning  
+redacts SSIDs  
+ships Bash from 2007
+
+Meanwhile you're out here doing **actual network defense**.
 
 <br>
