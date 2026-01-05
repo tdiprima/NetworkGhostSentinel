@@ -121,21 +121,113 @@ def scan_macos() -> list[Network]:
             capture_output=True, text=True, timeout=30
         )
         
-        lines = result.stdout.strip().split('\n')[1:]  # Skip header
-        for line in lines:
-            parts = line.split()
-            if len(parts) >= 7:
-                ssid = parts[0]
-                signal = parts[1]
-                security = " ".join(parts[6:]) if len(parts) > 6 else "Open"
-                
-                networks.append(Network(
-                    ssid=ssid,
-                    signal_strength=f"{signal} dBm",
-                    security=security if security != "NONE" else "Open"
-                ))
-    except (FileNotFoundError, subprocess.TimeoutExpired):
+        if result.returncode != 0:
+            print(f"airport command failed: {result.stderr}")
+            return []
+        
+        lines = result.stdout.strip().split('\n')
+        
+        if not lines:
+            return []
+        
+        # The header line tells us where each column starts
+        # Format: "                            SSID BSSID             RSSI CHANNEL HT CC SECURITY..."
+        header = lines[0]
+        
+        # Find column positions by looking for column headers
+        # BSSID is always a MAC address (17 chars: xx:xx:xx:xx:xx:xx)
+        bssid_start = header.find('BSSID')
+        rssi_start = header.find('RSSI')
+        channel_start = header.find('CHANNEL')
+        security_start = header.find('SECURITY')
+        
+        if bssid_start == -1:
+            # Fallback: try regex-based parsing
+            return scan_macos_regex(lines[1:])
+        
+        for line in lines[1:]:
+            if not line.strip():
+                continue
+            
+            # SSID is everything before BSSID column (right-trimmed)
+            ssid = line[:bssid_start].strip()
+            
+            # Skip hidden networks (empty SSID)
+            if not ssid:
+                continue
+            
+            # Get RSSI (signal strength) - it's between RSSI and CHANNEL columns
+            if rssi_start != -1 and channel_start != -1:
+                rssi = line[rssi_start:channel_start].strip()
+            else:
+                rssi = "N/A"
+            
+            # Get security - everything from SECURITY column onwards
+            if security_start != -1 and len(line) >= security_start:
+                security = line[security_start:].strip()
+            else:
+                security = "Unknown"
+            
+            # Normalize security display
+            if security.upper() == "NONE" or security == "":
+                security = "Open"
+            
+            networks.append(Network(
+                ssid=ssid,
+                signal_strength=f"{rssi} dBm" if rssi != "N/A" else "N/A",
+                security=security
+            ))
+            
+    except FileNotFoundError:
+        print(f"airport utility not found at {airport_path}")
         return []
+    except subprocess.TimeoutExpired:
+        print("Scan timed out")
+        return []
+    except Exception as e:
+        print(f"Error scanning: {e}")
+        return []
+    
+    return networks
+
+
+def scan_macos_regex(lines: list[str]) -> list[Network]:
+    """Fallback regex-based parsing for macOS airport output."""
+    networks = []
+    
+    # Pattern to match: SSID (possibly with spaces), MAC address, RSSI, etc.
+    # The MAC address is a reliable anchor point
+    pattern = re.compile(
+        r'^(.+?)\s+'                    # SSID (non-greedy, followed by whitespace)
+        r'([0-9a-fA-F:]{17})\s+'        # BSSID (MAC address)
+        r'(-?\d+)\s+'                   # RSSI
+        r'(\d+(?:,[\+\-]\d+)?)\s+'      # CHANNEL (might have ,+1 or ,-1)
+        r'(\S+)\s+'                     # HT
+        r'(\S+)\s+'                     # CC
+        r'(.*)$'                        # SECURITY
+    )
+    
+    for line in lines:
+        if not line.strip():
+            continue
+        
+        match = pattern.match(line)
+        if match:
+            ssid = match.group(1).strip()
+            rssi = match.group(3)
+            security = match.group(7).strip()
+            
+            if not ssid:
+                continue
+            
+            if security.upper() == "NONE" or security == "":
+                security = "Open"
+            
+            networks.append(Network(
+                ssid=ssid,
+                signal_strength=f"{rssi} dBm",
+                security=security
+            ))
     
     return networks
 
@@ -200,22 +292,22 @@ def scan_networks() -> list[Network]:
         print(f"Unsupported platform: {sys.platform}")
         return []
     
-    # Remove duplicates by SSID
-    seen = set()
-    unique_networks = []
+    # Remove duplicates by SSID (keep strongest signal if we have that info)
+    seen = {}
     for net in networks:
-        if net.ssid and net.ssid not in seen:
-            seen.add(net.ssid)
-            unique_networks.append(net)
+        if net.ssid:
+            if net.ssid not in seen:
+                seen[net.ssid] = net
+            # Could add logic here to keep the one with stronger signal
     
-    return unique_networks
+    return list(seen.values())
 
 
 def main():
-    print("=" * 60)
+    print("=" * 70)
     print("WiFi Network Scanner")
     print("Scanning for nearby wireless networks...")
-    print("=" * 60)
+    print("=" * 70)
     print()
     
     networks = scan_networks()
@@ -224,7 +316,10 @@ def main():
         print("No networks found. Possible reasons:")
         print("  - WiFi adapter is disabled")
         print("  - No networks in range")
-        print("  - Insufficient permissions (try running with sudo on Linux)")
+        print("  - Insufficient permissions")
+        if sys.platform == 'darwin':
+            print("  - Try running: /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s")
+            print("    to see if the airport utility works directly")
         return
     
     # Separate into protected and open
@@ -234,22 +329,25 @@ def main():
     # Display all networks
     print(f"Found {len(networks)} network(s):\n")
     
-    print("-" * 60)
-    print(f"{'SSID':<30} {'Signal':<12} {'Security':<15}")
-    print("-" * 60)
+    print("-" * 70)
+    print(f"{'SSID':<32} {'Signal':<12} {'Security':<24}")
+    print("-" * 70)
     
     for network in sorted(networks, key=lambda n: n.ssid.lower()):
         security_display = network.security if network.security else "Open"
         signal_display = network.signal_strength or "N/A"
-        print(f"{network.ssid:<30} {signal_display:<12} {security_display:<15}")
+        # Truncate long values for display
+        ssid_display = network.ssid[:30] + ".." if len(network.ssid) > 32 else network.ssid
+        security_display = security_display[:22] + ".." if len(security_display) > 24 else security_display
+        print(f"{ssid_display:<32} {signal_display:<12} {security_display:<24}")
     
-    print("-" * 60)
+    print("-" * 70)
     print()
     
     # Summary
-    print("=" * 60)
+    print("=" * 70)
     print("SUMMARY")
-    print("=" * 60)
+    print("=" * 70)
     print(f"Total networks found: {len(networks)}")
     print(f"Protected networks:   {len(protected)}")
     print(f"Open networks:        {len(open_networks)}")
