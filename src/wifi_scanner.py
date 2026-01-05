@@ -8,7 +8,7 @@ This is legal and is the same thing your phone/laptop does when showing availabl
 
 Requirements:
 - Linux: Uses `nmcli` (NetworkManager) or `iwlist`
-- macOS: Uses `airport` utility
+- macOS: Uses CoreWLAN framework (preferred) or system_profiler
 - Windows: Uses `netsh`
 """
 
@@ -35,11 +35,9 @@ def scan_linux_nmcli() -> list[Network]:
     """Scan using NetworkManager's nmcli (most common on modern Linux)."""
     networks = []
     try:
-        # Rescan first
         subprocess.run(["nmcli", "device", "wifi", "rescan"], 
                       capture_output=True, timeout=10)
         
-        # Get list with specific fields
         result = subprocess.run(
             ["nmcli", "-t", "-f", "SSID,SIGNAL,SECURITY", "device", "wifi", "list"],
             capture_output=True, text=True, timeout=30
@@ -50,16 +48,13 @@ def scan_linux_nmcli() -> list[Network]:
                 parts = line.split(':')
                 if len(parts) >= 3:
                     ssid = parts[0]
-                    if ssid:  # Skip hidden networks
+                    if ssid:
                         networks.append(Network(
                             ssid=ssid,
                             signal_strength=f"{parts[1]}%",
                             security=parts[2] if parts[2] else "Open"
                         ))
-    except FileNotFoundError:
-        return []
-    except subprocess.TimeoutExpired:
-        print("Scan timed out")
+    except (FileNotFoundError, subprocess.TimeoutExpired):
         return []
     
     return networks
@@ -69,7 +64,6 @@ def scan_linux_iwlist() -> list[Network]:
     """Fallback scan using iwlist (requires root)."""
     networks = []
     try:
-        # Find wireless interface
         iw_result = subprocess.run(["iwconfig"], capture_output=True, text=True)
         interface = None
         for line in iw_result.stdout.split('\n'):
@@ -110,124 +104,187 @@ def scan_linux_iwlist() -> list[Network]:
     return networks
 
 
-def scan_macos() -> list[Network]:
-    """Scan on macOS using the airport utility."""
+def scan_macos_corewlan() -> list[Network]:
+    """Scan on macOS using CoreWLAN framework (modern method)."""
     networks = []
-    airport_path = "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
     
     try:
-        result = subprocess.run(
-            [airport_path, "-s"],
-            capture_output=True, text=True, timeout=30
-        )
+        import objc
+        from Foundation import NSSet
         
-        if result.returncode != 0:
-            print(f"airport command failed: {result.stderr}")
+        # Load CoreWLAN framework
+        objc.loadBundle('CoreWLAN',
+                       bundle_path='/System/Library/Frameworks/CoreWLAN.framework',
+                       module_globals=globals())
+        
+        # Get the default WiFi interface
+        interface = CWInterface.interface()  # noqa: F821
+        
+        if not interface:
+            print("No WiFi interface found")
             return []
         
-        lines = result.stdout.strip().split('\n')
+        # Scan for networks (returns NSSet of CWNetwork objects)
+        scan_results, error = interface.scanForNetworksWithName_error_(None, None)
         
-        if not lines:
+        if error:
+            print(f"Scan error: {error}")
             return []
         
-        # The header line tells us where each column starts
-        # Format: "                            SSID BSSID             RSSI CHANNEL HT CC SECURITY..."
-        header = lines[0]
+        if not scan_results:
+            return []
         
-        # Find column positions by looking for column headers
-        # BSSID is always a MAC address (17 chars: xx:xx:xx:xx:xx:xx)
-        bssid_start = header.find('BSSID')
-        rssi_start = header.find('RSSI')
-        channel_start = header.find('CHANNEL')
-        security_start = header.find('SECURITY')
-        
-        if bssid_start == -1:
-            # Fallback: try regex-based parsing
-            return scan_macos_regex(lines[1:])
-        
-        for line in lines[1:]:
-            if not line.strip():
-                continue
-            
-            # SSID is everything before BSSID column (right-trimmed)
-            ssid = line[:bssid_start].strip()
-            
-            # Skip hidden networks (empty SSID)
+        for network in scan_results:
+            ssid = network.ssid()
             if not ssid:
                 continue
             
-            # Get RSSI (signal strength) - it's between RSSI and CHANNEL columns
-            if rssi_start != -1 and channel_start != -1:
-                rssi = line[rssi_start:channel_start].strip()
-            else:
-                rssi = "N/A"
+            rssi = network.rssiValue()
             
-            # Get security - everything from SECURITY column onwards
-            if security_start != -1 and len(line) >= security_start:
-                security = line[security_start:].strip()
-            else:
-                security = "Unknown"
-            
-            # Normalize security display
-            if security.upper() == "NONE" or security == "":
-                security = "Open"
-            
-            networks.append(Network(
-                ssid=ssid,
-                signal_strength=f"{rssi} dBm" if rssi != "N/A" else "N/A",
-                security=security
-            ))
-            
-    except FileNotFoundError:
-        print(f"airport utility not found at {airport_path}")
-        return []
-    except subprocess.TimeoutExpired:
-        print("Scan timed out")
-        return []
-    except Exception as e:
-        print(f"Error scanning: {e}")
-        return []
-    
-    return networks
-
-
-def scan_macos_regex(lines: list[str]) -> list[Network]:
-    """Fallback regex-based parsing for macOS airport output."""
-    networks = []
-    
-    # Pattern to match: SSID (possibly with spaces), MAC address, RSSI, etc.
-    # The MAC address is a reliable anchor point
-    pattern = re.compile(
-        r'^(.+?)\s+'                    # SSID (non-greedy, followed by whitespace)
-        r'([0-9a-fA-F:]{17})\s+'        # BSSID (MAC address)
-        r'(-?\d+)\s+'                   # RSSI
-        r'(\d+(?:,[\+\-]\d+)?)\s+'      # CHANNEL (might have ,+1 or ,-1)
-        r'(\S+)\s+'                     # HT
-        r'(\S+)\s+'                     # CC
-        r'(.*)$'                        # SECURITY
-    )
-    
-    for line in lines:
-        if not line.strip():
-            continue
-        
-        match = pattern.match(line)
-        if match:
-            ssid = match.group(1).strip()
-            rssi = match.group(3)
-            security = match.group(7).strip()
-            
-            if not ssid:
-                continue
-            
-            if security.upper() == "NONE" or security == "":
-                security = "Open"
+            # Get security type
+            # CWSecurity enum values
+            security_val = network.security()
+            security_map = {
+                0: "Open",           # kCWSecurityNone
+                1: "WEP",            # kCWSecurityWEP
+                2: "WPA Personal",   # kCWSecurityWPAPersonal
+                3: "WPA Personal Mixed",
+                4: "WPA2 Personal",  # kCWSecurityWPA2Personal
+                5: "Personal",       # kCWSecurityPersonal
+                6: "Dynamic WEP",
+                7: "WPA Enterprise",
+                8: "WPA2 Enterprise",
+                9: "Enterprise",
+                10: "WPA3 Personal",
+                11: "WPA3 Enterprise",
+                12: "WPA3 Transition",
+            }
+            security = security_map.get(security_val, f"Unknown ({security_val})")
             
             networks.append(Network(
                 ssid=ssid,
                 signal_strength=f"{rssi} dBm",
                 security=security
             ))
+            
+    except ImportError:
+        print("PyObjC not installed. Install with: pip3 install pyobjc-framework-CoreWLAN")
+        return []
+    except Exception as e:
+        print(f"CoreWLAN error: {e}")
+        return []
+    
+    return networks
+
+
+def scan_macos_system_profiler() -> list[Network]:
+    """Fallback scan using system_profiler (doesn't require extra packages)."""
+    networks = []
+    
+    try:
+        # system_profiler SPAirPortDataType shows current and nearby networks
+        result = subprocess.run(
+            ["system_profiler", "SPAirPortDataType"],
+            capture_output=True, text=True, timeout=30
+        )
+        
+        output = result.stdout
+        
+        # Find the "Other Local Wi-Fi Networks:" section
+        other_networks_match = re.search(
+            r'Other Local Wi-Fi Networks:(.*?)(?=\n\s*\n\s*[A-Z]|\Z)',
+            output,
+            re.DOTALL
+        )
+        
+        if other_networks_match:
+            other_section = other_networks_match.group(1)
+            
+            # Parse individual networks - they appear as indented blocks
+            # Network name followed by properties
+            network_blocks = re.split(r'\n\s{10,}(?=\S)', other_section)
+            
+            current_ssid = None
+            current_security = "Unknown"
+            current_signal = None
+            
+            for line in other_section.split('\n'):
+                # Network names are indented with spaces, followed by a colon
+                ssid_match = re.match(r'^\s{12,}(\S.*?):\s*$', line)
+                if ssid_match:
+                    # Save previous network
+                    if current_ssid:
+                        networks.append(Network(
+                            ssid=current_ssid,
+                            signal_strength=current_signal,
+                            security=current_security if current_security != "Unknown" else "Protected"
+                        ))
+                    current_ssid = ssid_match.group(1)
+                    current_security = "Unknown"
+                    current_signal = None
+                elif current_ssid:
+                    # Parse properties
+                    if 'Security:' in line:
+                        sec_match = re.search(r'Security:\s*(.+)', line)
+                        if sec_match:
+                            current_security = sec_match.group(1).strip()
+                    elif 'Signal / Noise:' in line:
+                        sig_match = re.search(r'Signal / Noise:\s*(.+)', line)
+                        if sig_match:
+                            current_signal = sig_match.group(1).strip()
+            
+            # Don't forget the last network
+            if current_ssid:
+                networks.append(Network(
+                    ssid=current_ssid,
+                    signal_strength=current_signal,
+                    security=current_security if current_security != "Unknown" else "Protected"
+                ))
+        
+        # Also get the current network
+        current_match = re.search(r'Current Network Information:(.*?)(?=Other Local Wi-Fi Networks:|$)', output, re.DOTALL)
+        if current_match:
+            current_section = current_match.group(1)
+            ssid_match = re.search(r'^\s{12,}(\S.*?):\s*$', current_section, re.MULTILINE)
+            if ssid_match:
+                current_ssid = ssid_match.group(1)
+                security = "Unknown"
+                signal = None
+                
+                sec_match = re.search(r'Security:\s*(.+)', current_section)
+                if sec_match:
+                    security = sec_match.group(1).strip()
+                
+                sig_match = re.search(r'Signal / Noise:\s*(.+)', current_section)
+                if sig_match:
+                    signal = sig_match.group(1).strip()
+                
+                # Add if not already in list
+                if not any(n.ssid == current_ssid for n in networks):
+                    networks.append(Network(
+                        ssid=current_ssid,
+                        signal_strength=signal,
+                        security=security
+                    ))
+                    
+    except subprocess.TimeoutExpired:
+        print("system_profiler timed out")
+        return []
+    except Exception as e:
+        print(f"system_profiler error: {e}")
+        return []
+    
+    return networks
+
+
+def scan_macos() -> list[Network]:
+    """Scan on macOS - try CoreWLAN first, fall back to system_profiler."""
+    # Try CoreWLAN first (more reliable, shows all networks)
+    networks = scan_macos_corewlan()
+    
+    if not networks:
+        print("CoreWLAN not available, trying system_profiler...")
+        networks = scan_macos_system_profiler()
     
     return networks
 
@@ -292,13 +349,12 @@ def scan_networks() -> list[Network]:
         print(f"Unsupported platform: {sys.platform}")
         return []
     
-    # Remove duplicates by SSID (keep strongest signal if we have that info)
+    # Remove duplicates by SSID
     seen = {}
     for net in networks:
         if net.ssid:
             if net.ssid not in seen:
                 seen[net.ssid] = net
-            # Could add logic here to keep the one with stronger signal
     
     return list(seen.values())
 
@@ -318,8 +374,8 @@ def main():
         print("  - No networks in range")
         print("  - Insufficient permissions")
         if sys.platform == 'darwin':
-            print("  - Try running: /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s")
-            print("    to see if the airport utility works directly")
+            print("\nFor best results on macOS, install PyObjC:")
+            print("  pip3 install pyobjc-framework-CoreWLAN")
         return
     
     # Separate into protected and open
@@ -330,16 +386,15 @@ def main():
     print(f"Found {len(networks)} network(s):\n")
     
     print("-" * 70)
-    print(f"{'SSID':<32} {'Signal':<12} {'Security':<24}")
+    print(f"{'SSID':<32} {'Signal':<15} {'Security':<20}")
     print("-" * 70)
     
     for network in sorted(networks, key=lambda n: n.ssid.lower()):
         security_display = network.security if network.security else "Open"
         signal_display = network.signal_strength or "N/A"
-        # Truncate long values for display
         ssid_display = network.ssid[:30] + ".." if len(network.ssid) > 32 else network.ssid
-        security_display = security_display[:22] + ".." if len(security_display) > 24 else security_display
-        print(f"{ssid_display:<32} {signal_display:<12} {security_display:<24}")
+        security_display = security_display[:18] + ".." if len(security_display) > 20 else security_display
+        print(f"{ssid_display:<32} {signal_display:<15} {security_display:<20}")
     
     print("-" * 70)
     print()
