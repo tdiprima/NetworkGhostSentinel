@@ -9,9 +9,6 @@ Bet. Here's a smarter version that:
 
 Save as `net-vibes-check.sh`, then `chmod +x net-vibes-check.sh`.
 
-```bash
-```
-
 ### How to run it
 
 ```bash
@@ -48,3 +45,4 @@ If you want *extra spicy* "something's off" mode, I can add quick checks for:
 * `dmesg -T | tail -n 200` for NIC resets
 * `conntrack -S` (if conntrack is in play)
 
+<br>
