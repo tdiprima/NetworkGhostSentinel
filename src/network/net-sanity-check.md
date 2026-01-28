@@ -45,4 +45,30 @@ If you want *extra spicy* "something's off" mode, I can add quick checks for:
 * `dmesg -T | tail -n 200` for NIC resets
 * `conntrack -S` (if conntrack is in play)
 
+---
+
+Bet. Ultra-short version:
+
+1. Run:
+
+   ```bash
+   ipconfig getifaddr en0
+   ```
+
+   → You’ll get something like `192.168.1.42`
+
+2. Take the **first 3 numbers** and add `.0/24`
+
+So:
+
+* `192.168.1.42` → `192.168.1.0/24`
+* `192.168.0.55` → `192.168.0.0/24`
+* `10.0.0.12` → `10.0.0.0/24`
+
+That value = what goes in:
+
+```bash
+NETWORK="192.168.x.0/24"
+```
+
 <br>
