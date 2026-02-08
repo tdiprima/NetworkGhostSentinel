@@ -1,4 +1,4 @@
-# How to figure out what belongs in known\_devices.json
+# How to figure out what belongs in known_devices.json
 
 You want to **observe first**, then whitelist.
 
@@ -93,6 +93,8 @@ MACs **must** be:
 
 Your code already normalizes, so you're safe.
 
+---
+
 ## 🧪 Bonus: identify vendors (optional but useful)
 
 To see who owns a MAC:
@@ -103,7 +105,7 @@ grep -i "AA:BB:CC" /usr/share/ieee-data/oui.txt
 
 Or online:
 
-* IEEE OUI lookup
+* IEEE OUI lookup (An **IEEE OUI lookup** is checking the first 3 bytes of a MAC address against the IEEE registry to identify the device manufacturer.)
 * Router admin UI (usually labels devices nicely)
 
 This helps answer:

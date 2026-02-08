@@ -1,4 +1,5 @@
-# What this code is doing (for a Python dev, networking noob edition)
+# What this code is doing
+(for a Python dev, networking noob edition)
 
 ## Mental model first (important)
 
@@ -12,6 +13,16 @@ ARP answers this question:
 "Hey, who owns IP `192.168.1.42`? Please reply with your MAC."
 
 ARP is **local-network only**, no routing, no internet. It's *layer 2*, so devices can't really hide from it unless they're trying very hard.
+
+---
+
+“Layer 2” means the **Data Link layer** in the OSI (Open Systems Interconnection) model.
+
+- Model with 7 layers to describe communication systems
+
+ARP lives there because it maps **IP addresses (Layer 3)** to **MAC addresses (Layer 2)** so devices can actually deliver frames on the local network. It only works inside the same LAN/broadcast domain — routers don’t forward ARP requests.
+
+---
 
 That's why this script is effective.
 
@@ -83,6 +94,8 @@ What actually happens on the wire:
 
 3. Scapy collects responses into `(IP, MAC)` pairs
 
+It’s a mash-up of **“Sca” (from scanner)** and **“py” (Python)** — basically meaning “a Python tool for packet crafting and network probing.”
+
 This bypasses:
 
 * Firewalls
@@ -90,6 +103,8 @@ This bypasses:
 * "Stealth" nonsense
 
 If it's on your LAN, ARP sees it.
+
+Because **Scapy** sends low-level **ARP** requests on the local network (which don’t use IP or ICMP), it learns devices’ IP→MAC mappings directly at Layer 2, so typical firewalls or ping/ICMP blocks don’t stop it.
 
 ### 🚨 Unknown detection
 
@@ -149,23 +164,16 @@ So expect some false positives unless you:
 
 That's not a bug in your code — that's modern privacy behavior.
 
-## 🧠 Pro-tip improvements (networking-aware)
+---
 
-If you want to level this up later:
+<br>
 
-* Bind to a specific interface (`CONFIG["interface"] = "wlan0"`)
-* Add hostname resolution (`socket.gethostbyaddr`)
-* Detect MAC randomization patterns
-* Alert only on *new* unknowns (not repeated ones)
+**CIDR** — A way to write IP ranges using slash notation (like `/24`) instead of old-school classes.
 
-## Final vibe check
+**DHCP** — A service that automatically gives devices IP addresses and network settings when they join a network.
 
-Your code is:
+**ELK** — The **Elastic Stack** (Elasticsearch, Logstash, Kibana) used for collecting, searching, and visualizing logs.
 
-* ✅ Architecturally sound
-* ✅ Using the right layer (ARP)
-* ⚠️ Subject to MAC randomization (not your fault)
-
-For a home network monitor, this is **clean, correct, and low-BS**.
+**IDS** — Intrusion Detection System; monitors network or systems to spot suspicious or malicious activity.
 
 <br>

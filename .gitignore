@@ -11,6 +11,5 @@ uv.lock
 .venv
 .env
 
-known_devices.json
-unknown_devices.jsonl
-ghost_monitor.log
+*.json*
+*.log

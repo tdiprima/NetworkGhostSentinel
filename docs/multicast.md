@@ -1,6 +1,6 @@
 ## WTF is a multicast?
 
-Totally fair — here's the **3-sentence, "ohhh got it" version**:
+It's like a broadcast.
 
 A **multicast** is when a computer sends one message to a **special group address** that means "everyone listening, pay attention," instead of sending it to one specific device.  
 No single device *owns* that address — it's like shouting "ANY PRINTER HERE?" into a room.  
@@ -94,16 +94,6 @@ Your script is fine because:
 * mDNS multicast will not respond like a real host
 
 If you *ever* see this in your script output, that would be a bug — but you won't.
-
-## Quick sanity checklist
-
-| Thing             | Is it bad? |
-| ----------------- | ---------- |
-| 224.0.0.251       | ❌ No       |
-| 01:00:5e:00:00:fb | ❌ No       |
-| mDNS / Bonjour    | ❌ No       |
-| Shows up on macOS | ✅ Normal   |
-| Needs action      | ❌ None     |
 
 ## One-liner you can keep in your head
 

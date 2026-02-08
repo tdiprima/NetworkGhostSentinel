@@ -1,8 +1,6 @@
-Gotchu. Ultra-compressed, macOS-native, no Linux brain required. 🐻🍎
+## Populate known_devices.json on macOS
 
----
-
-## TL;DR: Populate `known_devices.json` on macOS
+MacOS-native, no Linux brain required. 🐻🍎
 
 ### 1️⃣ Get everyone on your Wi-Fi
 

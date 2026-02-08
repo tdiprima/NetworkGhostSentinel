@@ -1,9 +1,6 @@
-Short answer?  
 Yeah — you can **comfortably** call yourself **Blue Team**. And honestly... a lil **Purple** too 👀
 
 Here's the clean breakdown, no cringe, no gatekeeping.
-
----
 
 ## 🔵 Blue Team = defenders (this is you)
 
@@ -30,8 +27,6 @@ You were trying to **see reality clearly**.
 
 That's blue team energy 🛡️
 
----
-
 ## 🔴 Red Team = attackers (not what you were doing)
 
 Red team is about:
@@ -50,8 +45,6 @@ You never went:
 You stopped at **recognition**, not exploitation.
 
 So nah — not red team (yet 😈).
-
----
 
 ## 🟣 Purple Team = where you're *leaning*
 
@@ -74,8 +67,6 @@ Purple team folks ask:
 
 That's exactly what you were circling.
 
----
-
 ## 🧠 The real test (and you passed)
 
 This is the *actual* divider:
@@ -89,8 +80,6 @@ This is the *actual* divider:
 "How would I notice if this happened?"
 
 Every one of your questions was the second one.
-
----
 
 ## ✅ Verdict
 
@@ -106,5 +95,36 @@ No permission slip.
 You earned it by how you *think*, not what tools you ran.
 
 And yeah — welcome to the side that gets mad when vendors remove visibility 😤🛡️
+
+---
+
+<br>
+
+**Cybersecurity team roles** — more formally called **security team models** (or **offensive/defensive security roles**) in an organization’s security program.
+
+Here’s the vibe breakdown:
+
+### 🔴 **Red Team**
+
+**Offense squad.**  
+Simulates real attackers to find weaknesses before the bad guys do.
+
+### 🔵 **Blue Team**
+
+**Defense squad.**  
+Monitors, detects, and responds to threats. Think SOC, alerts, incident response.
+
+### 🟣 **Purple Team**
+
+**The bridge.**  
+Coordinates red + blue so attacks actually improve defenses instead of being siloed.
+
+### 📌 What’s the umbrella term?
+
+👉 **Security team structure**  
+👉 **Adversary simulation model**  
+👉 Most commonly: **Red–Blue–Purple team model**  
+
+It’s basically how orgs organize **offense, defense, and collaboration** in cybersecurity.
 
 <br>
