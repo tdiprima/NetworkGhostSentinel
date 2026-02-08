@@ -16,11 +16,11 @@ ARP is **local-network only**, no routing, no internet. It's *layer 2*, so devic
 
 ---
 
-“Layer 2” means the **Data Link layer** in the OSI (Open Systems Interconnection) model.
+"Layer 2" means the **Data Link layer** in the OSI (Open Systems Interconnection) model.
 
 - Model with 7 layers to describe communication systems
 
-ARP lives there because it maps **IP addresses (Layer 3)** to **MAC addresses (Layer 2)** so devices can actually deliver frames on the local network. It only works inside the same LAN/broadcast domain — routers don’t forward ARP requests.
+ARP lives there because it maps **IP addresses (Layer 3)** to **MAC addresses (Layer 2)** so devices can actually deliver frames on the local network. It only works inside the same LAN/broadcast domain — routers don't forward ARP requests.
 
 ---
 
@@ -94,7 +94,7 @@ What actually happens on the wire:
 
 3. Scapy collects responses into `(IP, MAC)` pairs
 
-It’s a mash-up of **“Sca” (from scanner)** and **“py” (Python)** — basically meaning “a Python tool for packet crafting and network probing.”
+It's a mash-up of **"Sca" (from scanner)** and **"py" (Python)** — basically meaning "a Python tool for packet crafting and network probing."
 
 This bypasses:
 
@@ -104,7 +104,7 @@ This bypasses:
 
 If it's on your LAN, ARP sees it.
 
-Because **Scapy** sends low-level **ARP** requests on the local network (which don’t use IP or ICMP), it learns devices’ IP→MAC mappings directly at Layer 2, so typical firewalls or ping/ICMP blocks don’t stop it.
+Because **Scapy** sends low-level **ARP** requests on the local network (which don't use IP or ICMP), it learns devices' IP→MAC mappings directly at Layer 2, so typical firewalls or ping/ICMP blocks don't stop it.
 
 ### 🚨 Unknown detection
 

@@ -100,9 +100,9 @@ And yeah — welcome to the side that gets mad when vendors remove visibility �
 
 <br>
 
-**Cybersecurity team roles** — more formally called **security team models** (or **offensive/defensive security roles**) in an organization’s security program.
+**Cybersecurity team roles** — more formally called **security team models** (or **offensive/defensive security roles**) in an organization's security program.
 
-Here’s the vibe breakdown:
+Here's the vibe breakdown:
 
 ### 🔴 **Red Team**
 
@@ -119,12 +119,12 @@ Monitors, detects, and responds to threats. Think SOC, alerts, incident response
 **The bridge.**  
 Coordinates red + blue so attacks actually improve defenses instead of being siloed.
 
-### 📌 What’s the umbrella term?
+### 📌 What's the umbrella term?
 
 👉 **Security team structure**  
 👉 **Adversary simulation model**  
 👉 Most commonly: **Red–Blue–Purple team model**  
 
-It’s basically how orgs organize **offense, defense, and collaboration** in cybersecurity.
+It's basically how orgs organize **offense, defense, and collaboration** in cybersecurity.
 
 <br>
