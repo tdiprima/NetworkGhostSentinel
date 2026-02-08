@@ -26,6 +26,8 @@ For each SSID:
   * channels
 * Then decide:
 
+Because one Wi-Fi network name (SSID) can be broadcast by multiple physical access points or radios, each radio has its own unique MAC address (BSSID) even though they all share the same SSID.
+
 ### ✅ Safe duplicate
 
 * Same SSID

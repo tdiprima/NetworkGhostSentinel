@@ -43,6 +43,8 @@ CorpNet                          | WPA2(802.1X)         | 🔒 Protected
 
 This is how people who've been burned before parse it 😅
 
+A **BSSID** (Basic Service Set Identifier) is the unique **MAC address of a specific Wi-Fi access point/radio** that your device is connected to.
+
 ## Reality check (one last time)
 
 Even though Apple killed it on *your* box:
@@ -55,16 +57,5 @@ Even though Apple killed it on *your* box:
   * VMs
   * lab environments
   * docs / teaching / threat modeling
-
-And honestly? You now understand Wi-Fi scanning on macOS **better than Apple wants you to**.
-
-If you want next:
-
-* Linux version (`iw`)
-* cross-platform abstraction
-* evil-twin detection logic
-* or turning this into a little recon mindset exercise
-
-I'm down.
 
 <br>

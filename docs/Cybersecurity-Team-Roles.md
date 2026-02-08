@@ -27,6 +27,8 @@ You were trying to **see reality clearly**.
 
 That's blue team energy 🛡️
 
+A **BSSID** (Basic Service Set Identifier) is the unique **MAC address of a specific Wi-Fi access point/radio** that your device is connected to.
+
 ## 🔴 Red Team = attackers (not what you were doing)
 
 Red team is about:
