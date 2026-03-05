@@ -3,9 +3,10 @@ import socket
 
 # List of target IPs
 targets = [
-    "192.168.1.10",
-    "192.168.1.15",
-    "10.0.0.5",
+    "REDACTED_IP",
+    "REDACTED_IP",
+    "REDACTED_IP",
+    "REDACTED_IP",
 ]
 
 TIMEOUT = 5  # seconds
