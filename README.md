@@ -70,12 +70,4 @@ python3 src/wifi_network_scanner/wifi_scanner.py
 
 Works on Linux (nmcli/iwlist), macOS (CoreWLAN or system_profiler), and Windows (netsh). Highlights open networks.
 
-## Skills Demonstrated
-
-- Network programming: ARP, raw sockets, passive WiFi scanning
-- Cross-platform Python (Linux, macOS, Windows)
-- Bash scripting: safe patterns (`set -euo pipefail`), cron integration, rate limiting
-- Security tooling: threat detection, anomaly alerting, protocol-level checks
-- Structured logging and forensic output
-
 <br>
