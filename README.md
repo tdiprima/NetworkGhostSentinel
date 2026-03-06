@@ -1,109 +1,81 @@
-# 👻 NetworkGhostSentinel
+# NetworkGhostSentinel
 
-A tiny Python project that keeps an eye on your home network and snitches when a **new or weird device** shows up 👀
+## Why I Built This
 
-Basically:  
-**If something connects to your WiFi that you didn't expect, this script notices and tells you.**
+I want to know about any unexpected devices appearing on my home network immediately — not after the fact.
+Existing tools were either too heavy or required a cloud account. So I built `ghost_monitor`: a lightweight Python script that uses ARP scanning to detect unknown devices, checks them against a MAC whitelist, and logs alerts locally.
 
-⚠️ Do not scan networks you don't own. This is for personal awareness.
+The core problem: **Who's on my network, and should they be there?** All tools are intended for use on networks you own or administer.
 
-## 🧠 What does this actually do?
+## How It Grew
 
-* Scans your **home network**
-* Looks at **devices connected to it**
-* Remembers what's "normal"
-* Alerts/logs when something **new or suspicious** appears 🚨
+One tool led to another. While investigating network anomalies, I needed to:
 
-Think of it like a bouncer for your WiFi.
+- Detect MAC address randomization between scans (`network_guardian.sh`)
+- Survey nearby WiFi networks and flag open (unencrypted) ones (`wifi_scanner.py` + shell variants)
+- Run a full "something feels off" diagnostic — routing, ARP table, listening ports, DNS, packet captures, firewall rules, and NIC stats — in one shot (`net-vibes-check.sh`)
 
-## 📂 What's in this repo?
 
-* **Filename:** `home_network_monitor.py`
-* **Language:** Python 🐍
-* **Runs on:** Linux, Raspberry Pi, or a regular PC
+What started as a single monitor script became a small toolkit for home network security awareness.
 
-## 🏷️ Tags (aka vibes)
+## Tools at a Glance
 
-* `network-security`
-* `arp-scanning`
-* `python-monitor`
+| File | What It Does |
+|------|-------------|
+| `src/ghost_monitor/home_network_monitor.py` | Continuously ARP-scans your subnet, alerts on unknown MACs |
+| `src/network/network_guardian.sh` | nmap-based scan with change detection and MAC randomization alerts; cron-friendly |
+| `src/network/net-vibes-check.sh` | Full network diagnostic: routing, ARP, ports, DNS, tcpdump, firewall, NIC stats |
+| `src/wifi_network_scanner/wifi_scanner.py` | Cross-platform WiFi scanner; flags open networks |
+| `src/wifi_network_scanner/scan_open_wifi.sh` | Shell-based open WiFi scanner |
 
-## ✨ Inspiration
+## Usage
 
-Inspired by an article by **Aeon Flex**:
+### Ghost Monitor (requires root for raw sockets)
 
-*"An ESP32 Script That Monitors My Home Network for Weird Devices"*
+```bash
+pip install scapy netifaces loguru
+# Edit known_devices.json with your devices' MACs
+sudo python3 src/ghost_monitor/home_network_monitor.py
+```
 
-This project is basically that idea, but rewritten in Python.
+Alerts are logged to `ghost_monitor.log`; unknown devices are recorded in `unknown_devices.jsonl`.
 
-## 🚫 What this project does *NOT* do (important)
+### Network Guardian (nmap-based, cron-friendly)
 
-Some expectations to set so you don't suffer 😭👇
+```bash
+# First run creates a baseline; subsequent runs diff against it
+bash src/network/network_guardian.sh
 
-### ❌ Not for ESP32 / MicroPython
+# Run every 15 minutes via cron:
+# */15 * * * * /path/to/network_guardian.sh
+```
 
-* ESP32 doesn't have easy access to ARP tables
-* No Scapy support
-* Raw ARP packets = messy, long, unreliable code
-* Ping-based scans are slow and often blocked
+Edit `EMAIL` and `NETWORK` at the top of the script before use.
 
-👉 **Use a Raspberry Pi or Linux PC instead**
+### Net Vibes Check ("something feels off" diagnostic)
 
-### ❌ Not ultra low-power
+```bash
+bash src/network/net-vibes-check.sh [interface]
+# e.g.
+bash src/network/net-vibes-check.sh eth0
+```
 
-* This is a Python loop
-* Uses ~5–10% CPU
-* ESP32 sleep-mode magic ❌
-* Raspberry Pi Zero W ≈ ~1W power usage ⚡
+Output is printed to the terminal and saved to a timestamped log file.
 
-### ❌ No EEPROM magic
+### WiFi Scanner
 
-* Uses files / JSON to remember devices
-* ESP32 file systems are tiny and kinda fragile
+```bash
+python3 src/wifi_network_scanner/wifi_scanner.py
+```
 
-### ❌ No LEDs or buzzers (by default)
+Works on Linux (nmcli/iwlist), macOS (CoreWLAN or system_profiler), and Windows (netsh). Highlights open networks.
 
-* No GPIO assumed
-* Alerts are:
+## Skills Demonstrated
 
-  * terminal output (`print`)
-  * logs
-  * or things like HTTP / MQTT if you add them
-
-(You *can* add GPIO later if you're on a Pi 🧩)
-
-### ❌ Windows support is shaky
-
-* ARP scanning on Windows needs:
-
-  * admin privileges
-  * Npcap
-* Results can be inconsistent 😬
-
-👉 **Linux / Raspberry Pi is strongly recommended**
-
-### ❌ No WiFi connection setup
-
-* This script assumes:
-
-  * you're already connected to WiFi
-* Unlike ESP32 projects, there's no `WiFi.begin()` step
-
-## 👩‍💻 Who is this for?
-
-* Beginners who want to:
-
-  * learn how network monitoring works
-  * see what's actually on their WiFi
-* Tinkerers with a Raspberry Pi 🥧
-* Anyone mildly paranoid about random devices on their network (valid)
-
-## 🛠️ TL;DR
-
-* 🕵️‍♀️ Watches your network
-* 📡 Detects new devices
-* 🐍 Written in Python
-* 🍓 Best on Raspberry Pi or Linux
-* ❌ Not ESP32, not Windows-friendly
+- Network programming: ARP, raw sockets, passive WiFi scanning
+- Cross-platform Python (Linux, macOS, Windows)
+- Bash scripting: safe patterns (`set -euo pipefail`), cron integration, rate limiting
+- Security tooling: threat detection, anomaly alerting, protocol-level checks
+- Structured logging and forensic output
 
 <br>
